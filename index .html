@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuffSci & RocSci HR Assistant</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.agent{background:white;border-radius:14px;border:1px solid #e5e5e0;width:100%;max-width:800px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.header{padding:1.1rem 1.5rem;border-bottom:1px solid #e5e5e0;display:flex;align-items:center;gap:12px;background:#0C3260}
+.logo-mark{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:20px;height:20px;fill:white}
+.header-text h2{font-size:15px;font-weight:600;color:white}
+.header-text p{font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px}
+.cat-bar{display:flex;gap:5px;padding:0.65rem 1.2rem;border-bottom:1px solid #e5e5e0;flex-wrap:wrap;background:#fafaf8}
+.cat-btn{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid #e0e0da;background:white;color:#666;cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:inherit}
+.cat-btn:hover{border-color:#aaa;color:#1a1a1a}
+.cat-btn.active{background:#0C3260;color:white;border-color:#0C3260}
+.chat-area{height:390px;overflow-y:auto;padding:1rem 1.2rem;display:flex;flex-direction:column;gap:10px;background:#fefefe}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.avatar.bot{background:#0C3260;color:white}
+.avatar.user{background:#e8f0fe;color:#1a5296}
+.bubble{max-width:84%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.6}
+.bubble.bot{background:#f3f4f6;color:#1a1a1a;border:1px solid #e5e5e0}
+.bubble.user{background:#0C3260;color:white}
+.bubble ul,.bubble ol{padding-left:1.1rem;margin-top:5px}
+.bubble li{margin-bottom:3px}
+.bubble strong{font-weight:600}
+.bubble table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.bubble th{background:#f0f0ec;padding:5px 7px;text-align:left;border:1px solid #ddd;font-weight:600}
+.bubble td{padding:4px 7px;border:1px solid #ddd}
+.bubble tr:nth-child(even) td{background:#fafaf8}
+.esc-btn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 11px;border-radius:7px;border:1px solid #ddd;background:white;font-size:11px;color:#1a5296;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.esc-btn:hover{background:#e8f0fe;border-color:#aac}
+.note-pill{display:inline-block;padding:3px 9px;border-radius:10px;font-size:11px;background:#fff3cd;color:#856404;margin-top:5px;border:1px solid #ffc107}
+.quick-bar{padding:0.55rem 1.2rem;border-top:1px solid #e5e5e0;border-bottom:1px solid #e5e5e0;display:flex;gap:5px;flex-wrap:wrap;background:#fafaf8}
+.quick-q{font-size:11px;padding:4px 10px;border-radius:12px;border:1px solid #e0e0da;background:white;color:#555;cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:inherit}
+.quick-q:hover{border-color:#aaa;color:#1a1a1a;background:#f5f5f3}
+.input-row{display:flex;gap:8px;padding:0.7rem 1.2rem;align-items:center;background:white}
+#userInput{flex:1;height:36px;padding:0 11px;border-radius:8px;border:1px solid #ddd;background:white;color:#1a1a1a;font-size:13px;font-family:inherit}
+#userInput:focus{outline:none;border-color:#999}
+#sendBtn{height:36px;padding:0 16px;border-radius:8px;background:#0C3260;color:white;border:none;font-size:13px;cursor:pointer;font-weight:500;transition:opacity 0.15s;font-family:inherit}
+#sendBtn:hover{opacity:0.85}
+.typing{display:flex;gap:4px;align-items:center}
+.dot{width:5px;height:5px;border-radius:50%;background:#888;animation:blink 1.2s infinite}
+.dot:nth-child(2){animation-delay:0.2s}.dot:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,80%,100%{opacity:0.3}40%{opacity:1}}
+.footer{padding:0.5rem 1.2rem;text-align:center;font-size:10px;color:#aaa;background:#fafaf8;border-top:1px solid #e5e5e0}
+@media(max-width:600px){body{padding:0;align-items:flex-start}.agent{border-radius:0;min-height:100vh}.chat-area{height:350px}}
+</style>
+</head>
+<body>
+<div class="agent">
+
+<div class="header">
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+  </div>
+  <div class="header-text">
+    <h2>BuffSci & RocSci HR Assistant</h2>
+    <p>Handbook · Benefits · 2026–27 Payscale · Leave Policies — escalates to hrteam@buffsci.org</p>
+  </div>
+</div>
+
+<div class="cat-bar">
+  <button class="cat-btn active" onclick="setCat('all',this)">All topics</button>
+  <button class="cat-btn" onclick="setCat('pay',this)">Salary & Pay</button>
+  <button class="cat-btn" onclick="setCat('leave',this)">PTO & Leave</button>
+  <button class="cat-btn" onclick="setCat('fmla',this)">FMLA / PFL / STD</button>
+  <button class="cat-btn" onclick="setCat('benefits',this)">Benefits</button>
+  <button class="cat-btn" onclick="setCat('onboard',this)">Onboarding</button>
+  <button class="cat-btn" onclick="setCat('policy',this)">Policies</button>
+</div>
+
+<div class="chat-area" id="chatArea"></div>
+
+<div class="quick-bar" id="quickBar"></div>
+
+<div class="input-row">
+  <input id="userInput" type="text" placeholder="Ask an HR question..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+  <button id="sendBtn" onclick="sendMsg()">Ask</button>
+</div>
+
+<div class="footer">BuffSci & RocSci Charter School Network · 2026–27 · Policies subject to change · Always verify with hrteam@buffsci.org</div>
+
+</div>
+
+<script>
+const PAYSCALE={1:[48500,50500,50000,52000,53500,55500],2:[50000,52000,51500,53500,55000,57000],3:[51500,53500,53000,55000,56500,58500],4:[53000,55000,54500,56500,58000,60000],5:[54500,56500,56000,58000,59500,61500],6:[56000,58000,57500,59500,61000,63000],7:[57500,59500,59000,61000,62500,64500],8:[59000,61000,60500,62500,64000,66000],9:[60500,62500,62000,64000,65500,67500],10:[62000,64000,63500,65500,67000,69000],11:[63500,65500,65000,67000,68500,70500],12:[65000,67000,66500,68500,70000,72000],13:[66500,68500,68000,70000,71500,73500],14:[68000,70000,69500,71500,73000,75000],15:[69500,71500,71000,73000,74500,76500],16:[71000,73000,72500,74500,76000,78000],17:[72500,74500,74000,76000,77500,79500],18:[74000,76000,75500,77500,79000,81000],19:[75500,77500,77000,79000,80500,82500],20:[77000,79000,78500,80500,82000,84000],21:[78500,80500,80000,82000,83500,85500],22:[80000,82000,81500,83500,85000,87000],23:[81500,83500,83000,85000,86500,88500],24:[83000,85000,84500,86500,88000,90000],25:[84500,86500,86000,88000,89500,91500],26:[86000,88000,87500,89500,91000,93000],27:[87500,89500,89000,91000,92500,94500],28:[89000,91000,90500,92500,94000,96000],29:[90500,92500,92000,94000,95500,97500],30:[92000,94000,93500,95500,97000,99000]};
+
+const QUICK={all:["What is the difference between PFL, FMLA, and STD?","What is my salary at Step 1 with a master's?","How do I request PTO?","What health plans are available?","How do I apply for PFL?","What is the 403(b) match?"],pay:["What is the 2026-27 payscale?","How am I placed on a salary step?","What happens if I get certified mid-year?","What are stipends?","How is experience credit calculated?","Can I negotiate my salary?"],leave:["How do I request PTO?","What are PTO blackout dates?","How does PTO accrue?","What is religious observance PTO?","Do unused PTO days carry over?","What is the vacation payout rate?"],fmla:["What is the difference between PFL, FMLA, and STD?","Who is eligible for PFL?","Who is eligible for FMLA?","How do I apply for PFL?","Can I take PFL intermittently?","What does STD pay?"],benefits:["What health plans are offered?","What are my dental and vision options?","What is the 403(b) match?","Can I waive health insurance for a stipend?","What is the HRA?","When does health insurance start?"],onboard:["What documents do I need on Day 1?","When is fingerprinting reimbursed?","How do I access Paycom?","When does my health insurance start?","What happens at orientation?"],policy:["What are teacher work hours?","When is PTO denied?","How does the referral bonus work?","What is the hybrid work policy?","What is the dress code?","Does BuffSci offer multi-year contracts?"]};
+
+function esc(){return`<br><a class="esc-btn" href="mailto:hrteam@buffsci.org">Email HR team (hrteam@buffsci.org) →</a>`}
+
+const KB=[
+  {keys:['payscale','salary scale','pay scale','step','bachelor','master','phd','edd','what is my salary','certified salary','uncertified','2026','how much do teachers make','teacher salary','counselor salary','social worker salary'],ans(){const rows=[1,2,3,4,5,6,7,8,9,10].map(s=>`<tr><td>${s}</td>${PAYSCALE[s].map(v=>`<td>$${v.toLocaleString()}</td>`).join('')}</tr>`).join('');return`<strong>2026–27 Teacher Payscale (Steps 1–10)</strong><div class="note-pill">Subject to change annually — contact HR for current rates</div><table><tr><th>Step</th><th>BA no cert</th><th>BA cert</th><th>MA no cert</th><th>MA cert</th><th>EdD no cert</th><th>EdD cert</th></tr>${rows}</table>Steps 11–30 continue to $99,000 (EdD certified). Applies to teachers, counselors, and social workers.${esc()}`}},
+  {keys:['step placement','experience credit','prior experience','placed on step','credit for experience','years experience'],ans:`<strong>Salary Step Placement</strong><br><br>New hires are placed based on <strong>verified prior lead teaching experience</strong>.<br><br><strong>Rule:</strong> Every <strong>2 full years</strong> of prior lead teaching outside BuffSci = <strong>1 step</strong> (max credit: 20 years = Step 10).<br><br><strong>Eligible experience:</strong><ul><li>Full-time K–12 or higher education teaching</li><li>Substitute or support teaching with valid credentials at time of service</li></ul>All experience must be documented and verified. Falsified documents result in immediate termination. Once a contract is signed, the step is fixed.`},
+  {keys:['certification mid year','certified after hire','earn master after','degree adjustment','certification expires','dual certification'],ans:`<strong>Certification & Degree Adjustments</strong><br><br><ul><li>Earning a <strong>master's or certification after signing</strong>: prorated increase takes effect in the <strong>next paycheck</strong> after confirmation</li><li><strong>Certification expires mid-year</strong> with 90+ school days taught under valid cert: pay stays at certified rate for the rest of the year. Otherwise, adjusts to uncertified rate immediately.</li><li><strong>Dual certifications</strong>: no additional pay beyond primary certification level</li></ul>`},
+  {keys:['substitute','long term sub','temporary teacher','temp role'],ans:`<strong>Substitute & Temporary Teacher Pay</strong><br><br>Long-term substitute roles (after first 20 school days) are paid at <strong>Step 1, Bachelor's, uncertified — $48,500</strong>.<br><br>One year of BuffSci experience credit requires a minimum of <strong>90 school days worked</strong>.`},
+  {keys:['multi year contract','contract length','one year contract','negotiate salary','can i negotiate'],ans:`<strong>Contract Terms</strong><br><br>All employees are offered <strong>one-year contracts</strong>. Multi-year contracts are not currently offered. Salary placement follows the official payscale — individual negotiation outside the payscale is not available. Step placement is fixed once the contract is signed.${esc()}`},
+  {keys:['difference between pfl fmla std','pfl vs fmla','fmla vs std','what is pfl','what is fmla','what is std','explain leave types','types of leave','which leave do i use'],ans:`<strong>PFL vs FMLA vs STD — What's the Difference?</strong><br><br><table><tr><th>Leave</th><th>Covers</th><th>Who pays</th><th>Duration</th></tr><tr><td><strong>PFL</strong></td><td>New child bonding, seriously ill family member, military deployment</td><td>State — 67% of avg weekly wage (max $1,177/wk)</td><td>Up to 12 weeks</td></tr><tr><td><strong>FMLA</strong></td><td>Your own serious health condition OR family care — job-protected</td><td>Unpaid (use accrued PTO)</td><td>Up to 12 weeks</td></tr><tr><td><strong>STD</strong></td><td>Your own non-work illness/injury — you cannot work</td><td>School pays — 60% up to $1,000/wk</td><td>Up to 26 weeks</td></tr></table><br><strong>Key rules:</strong><ul><li>PFL and FMLA run <em>concurrently</em> when both apply — not additive</li><li>You <strong>cannot</strong> receive STD and PFL at the same time</li><li>FMLA is unpaid — use accrued PTO during FMLA if you want pay</li></ul>${esc()}`},
+  {keys:['who is eligible for pfl','pfl eligibility','qualify for pfl','paid family leave eligible'],ans:`<strong>PFL Eligibility</strong><br><br><ul><li><strong>Full-time</strong> (20+ hrs/week): after <strong>26 consecutive weeks</strong></li><li><strong>Part-time</strong> (&lt;20 hrs/week): after <strong>175 days worked</strong></li></ul><strong>Qualifying reasons:</strong><ul><li>Bonding with new child (within first 12 months)</li><li>Caring for a seriously ill family member</li><li>Military family deployment assistance</li><li>Prenatal care (up to 20 hrs/52-week period) — effective Jan 1, 2025</li><li>Lactation breaks — up to 30 min every 3 hrs for up to 3 years post-childbirth</li></ul>PFL does <strong>not</strong> cover your own illness — that's STD or FMLA.`},
+  {keys:['who is eligible for fmla','fmla eligibility','qualify for fmla'],ans:`<strong>FMLA Eligibility</strong><br><br>You must have:<ul><li>Worked at BuffSci/RocSci for at least <strong>12 months</strong>, AND</li><li>Worked at least <strong>1,250 hours</strong> during that period</li></ul><strong>Qualifying reasons:</strong><ul><li>Your own serious health condition</li><li>Birth/adoption/foster placement of a child</li><li>Caring for a spouse, child, or parent with serious health condition</li><li>Military qualifying exigency</li></ul>FMLA is <strong>job-protected</strong>. Health benefits are maintained — you continue paying your premium share.`},
+  {keys:['how apply pfl','submit pfl','pfl paperwork','pfl forms','file pfl','request pfl'],ans:`<strong>How to Apply for PFL</strong><br><br><ol><li>Get forms from the <strong>HR Office</strong> or at <strong>ny.gov/PaidFamilyLeave</strong></li><li>Submit written request to HR at least <strong>30 days in advance</strong> when foreseeable</li><li>Include all required documentation</li><li>HR schedules a <strong>pre-leave planning meeting</strong> with you and your supervisor</li></ol><strong>Pay:</strong> 67% of average weekly wage, capped at <strong>$1,177.32/week</strong> (2025). PTO does not accrue during PFL. Must be taken in <strong>full-day increments</strong>. PFL days cannot connect to long weekends or holidays.${esc()}`},
+  {keys:['intermittent pfl','intermittent leave'],ans:`<strong>Intermittent PFL</strong><br><br>PFL may be taken in non-consecutive full days. Additional rules:<ul><li>Submit and get HR approval at least <strong>30 days in advance</strong></li><li>PFL days <strong>cannot</strong> connect to long weekends or holidays</li><li>School may request rearrangement during peak academic calendar periods</li><li>Cancellations/changes must be submitted in writing</li></ul>A return-to-work plan and coverage training will be arranged before leave begins.`},
+  {keys:['std short term disability','disability pay','how much std pay','std benefit','disability insurance','short term disability eligible'],ans:`<strong>Short-Term Disability (STD)</strong><br><br>Provided through <strong>New York Life</strong> — <strong>100% employer paid</strong>.<br><br><ul><li><strong>Benefit:</strong> 60% of salary, up to <strong>$1,000/week</strong></li><li><strong>Waiting period:</strong> 7 days</li><li><strong>Duration:</strong> Up to 26 weeks</li><li>Offsets NYS statutory disability (50% up to $170/wk)</li></ul>STD covers <em>your own</em> illness or injury only. You cannot receive STD and PFL simultaneously.<br><br>Contact: New York Life <strong>888-842-4462</strong>${esc()}`},
+  {keys:['long term disability','ltd'],ans:`<strong>Long-Term Disability (LTD)</strong><br><br>Through <strong>New York Life</strong> — <strong>100% employer paid</strong>.<br><ul><li><strong>Benefit:</strong> 60% of salary, up to <strong>$5,000/month</strong></li><li><strong>Waiting period:</strong> 180 days</li><li><strong>Duration:</strong> To Social Security Normal Retirement Age</li></ul>Contact: New York Life <strong>888-842-4462</strong>`},
+  {keys:['health insurance','medical plan','meritain','premium cost','health coverage','copay plan','hybrid plan','deductible plan','which plan'],ans:`<strong>Health Insurance — 2025 Plans (Meritain)</strong><br><br>School covers <strong>80% of premiums</strong>. Monthly employee costs:<br><br><table><tr><th>Plan</th><th>Single</th><th>+Child</th><th>+Spouse</th><th>Family</th></tr><tr><td><strong>Copay</strong></td><td>$134.91</td><td>$229.34</td><td>$269.81</td><td>$384.48</td></tr><tr><td><strong>Hybrid</strong> (HRA $500/$1k)</td><td>$131.28</td><td>$223.17</td><td>$262.55</td><td>$374.14</td></tr><tr><td><strong>Deductible</strong> (HRA $500/$1.5k)</td><td>$114.87</td><td>$195.26</td><td>$229.72</td><td>$327.36</td></tr></table><br>All plans include telemedicine (covered in full), Teladoc behavioral health, and SmithRx pharmacy. Enroll in <strong>Paycom</strong>.${esc()}`},
+  {keys:['hra','health reimbursement','deductible reimbursement'],ans:`<strong>Health Reimbursement Account (HRA)</strong><br><br>Available on the <strong>Hybrid</strong> and <strong>Deductible</strong> plans through Flores.<br><table><tr><th>Plan</th><th>Individual HRA</th><th>Family HRA</th></tr><tr><td>Hybrid</td><td>$500</td><td>$1,000</td></tr><tr><td>Deductible</td><td>$500</td><td>$1,500</td></tr></table><br>HRA auto-applies to deductible expenses via your debit card. Prescriptions are not subject to the deductible. Unused HRA does not roll over. Plan year: September 1 – August 31.`},
+  {keys:['dental','vision','sunlife','eye exam','frames','contacts','cleaning'],ans:`<strong>Dental & Vision (SunLife)</strong><br><br><strong>Dental:</strong> $6.14/mo (employee) | $17.84/mo (family)<ul><li>Preventive (cleanings/x-rays/exams): <strong>100%</strong></li><li>Basic (fillings/extractions): 80% in-network</li><li>Major (bridges/implants): 80% in-network</li><li>Annual max: $2,000 | Child ortho lifetime: $1,500</li></ul><strong>Vision:</strong> $6.22/mo (single) | $18.64/mo (family)<ul><li>Eye exam (every 12 mo): $10 copay</li><li>Frames (every 24 mo): $130 allowance</li><li>Contacts or lenses (every 12 mo): $130 allowance</li></ul>`},
+  {keys:['403b','retirement','match','vesting','equitable','nystrs','pension'],ans:`<strong>Retirement — 403(b) or NYSTRS</strong><br><br><strong>NYSTRS-eligible staff</strong> (most certified teachers): enrolled in NYS Teachers' Retirement System. School contributes $4,852/yr.<br><br><strong>Non-NYSTRS staff:</strong> School matches <strong>100% of first 5%</strong> of 403(b) contributions, capped at <strong>$5,000/year</strong>.<br><br><strong>Vesting:</strong> Year 1: 20% | Year 2: 40% | Year 3: 60% | Year 4: 80% | Year 5+: 100%<br><br>Provider: Equitable. Contact HR for enrollment.`},
+  {keys:['waive health insurance','decline health insurance','opt out health','health stipend','waiver'],ans:`<strong>Waiving Health Insurance</strong><br><br>If you have other coverage and wish to decline the school plan, you may be eligible for a <strong>cash stipend</strong> paid across your paychecks.<br><br>To waive: submit a waiver form + proof of current coverage to HR by the end of <strong>open enrollment</strong>. Missing the deadline may disqualify you from the stipend. Changes outside open enrollment require a qualifying life event within 30 days.${esc()}`},
+  {keys:['when does health insurance start','insurance effective date','new hire insurance','benefits start date'],ans:`<strong>When Does Health Insurance Start?</strong><br><br>For mid-year new hires: coverage begins on the <strong>first day of the month following</strong> your start date. For academic year starts: September 1.<br><br>Enroll through <strong>Paycom</strong> during your onboarding window. Missing the window requires a qualifying life event to enroll.${esc()}`},
+  {keys:['life insurance','basic life','ad&d','beneficiary'],ans:`<strong>Basic Life & AD&D Insurance</strong><br><br>Through <strong>New York Life</strong> — <strong>100% employer paid</strong>.<ul><li>Benefit: <strong>1× your annual salary</strong>, up to $50,000</li><li>AD&D maximum equals the life amount</li><li>Reduces 35% at age 65; 50% at age 70</li></ul>Update your beneficiary in <strong>Paycom</strong>.`},
+  {keys:['pto request','request time off','submit pto','paycom pto','accrue pto','how many pto days','pto policy'],ans:`<strong>PTO Policy</strong><br><br>Enter all requests into <strong>Paycom</strong> at least <strong>5 days in advance</strong>. Illness PTO must be entered upon return. Absences of 3+ days require a <strong>doctor's note</strong>.<br><br><strong>Allocation:</strong><ul><li>10-month staff: <strong>10 days</strong> (accrual starts September)</li><li>11-month staff: <strong>11 days</strong> (accrual starts August 1)</li><li>12-month staff: <strong>12 days</strong> (accrual starts July 1)</li></ul>Accrual: <strong>8 hours/month</strong>. No waiting period. Unused PTO pays out at <strong>$150/day</strong> at year end. Does not carry over.`},
+  {keys:['pto blackout','pto denied','when can i not take pto','restricted days'],ans:`<strong>When PTO May Be Denied</strong><br><br>PTO is generally not approved for:<ul><li>Days immediately before or after a holiday</li><li>State or school testing days</li><li>First week of school</li><li>Last two weeks of school</li></ul>If you call in sick on these days, a <strong>doctor's note</strong> is required immediately upon return.`},
+  {keys:['religious pto','cultural observance','religious holiday','observance day'],ans:`<strong>Religious & Cultural Observance PTO</strong><br><br>All full-time and part-time staff receive <strong>1 paid day per calendar year</strong> for religious or cultural observance — separate from regular PTO and holidays.<br><br>Email your supervisor and cc <strong>hrteam@buffsci.org</strong> at least <strong>5 business days in advance</strong>. Include your name, date, and holiday name (optional). Non-transferable, non-cumulative, must be used within the calendar year.`},
+  {keys:['fingerprint','background check','i-9','first day','onboard','new hire','orientation','what documents','start employment'],ans:`<strong>New Hire Onboarding</strong><br><br><strong>Day 1–3:</strong> Complete federal <strong>Form I-9</strong> with identity documents within 3 days of start.<br><br><strong>Fingerprinting:</strong> Required before permanent hire — at your expense initially. After <strong>30 days of employment</strong>, submit your receipt + NYSED clearance proof to HR for reimbursement via <strong>Ramp</strong>.<br><br><strong>Benefits:</strong> Enroll in <strong>Paycom</strong>. Health coverage starts the first of the month after your start date.<br><br><strong>Orientation:</strong> Covers philosophy, policies, payroll, benefits, safety, and your role-specific responsibilities.`},
+  {keys:['paycom','hr platform','portal','access paycom'],ans:`<strong>Paycom — Your HR Platform</strong><br><br><ul><li>Benefits enrollment and life event changes</li><li>PTO requests (5 days advance notice required)</li><li>Paycheck, direct deposit, and W-2 access</li><li>Personal information and beneficiary updates</li><li>Time tracking (non-exempt staff)</li></ul>Access issues? Contact <a href="mailto:hrteam@buffsci.org" style="color:#1a5296">hrteam@buffsci.org</a> immediately.`},
+  {keys:['paycheck schedule','when paid','pay period','first paycheck','biweekly','direct deposit'],ans:`<strong>Payroll Schedule</strong><br><br>Paid <strong>every two weeks</strong> (14 calendar days), Monday–Sunday pay periods.<br><br><ul><li><strong>Academic year:</strong> 22 pay periods (Sept–June). Option to elect 26-period distribution — last 4 paychecks as balloon payment by July 1. Election must be made before first paycheck of the year.</li><li><strong>Calendar year:</strong> 26 pay periods (July–June)</li></ul>If payday falls on a holiday, you receive payment on the <strong>last working day before</strong> the holiday. Report payroll errors to HR — corrections made in the next pay cycle.`},
+  {keys:['stipend','additional duties','grade chair','department chair','coach','athletics director','club','extracurricular pay'],ans:`<strong>Stipends & Additional Duties</strong><br><br>Teachers may hold additional roles (grade chair, department chair, coach, athletics director, club advisor) and receive supplemental pay at a <strong>predetermined rate</strong>.<br><br>Total compensation includes <strong>$3,000+ in additional stipends</strong>. Afterschool club advisors are compensated by number of weekly meetings held.<br><br><div class="note-pill">Specific rates announced annually and subject to change — contact HR</div>${esc()}`},
+  {keys:['mileage','reimbursement','ramp','expense','fingerprint reimbursement','tuition reimbursement','course reimbursement'],ans:`<strong>Reimbursements — via Ramp platform</strong><br><br><ul><li><strong>Fingerprinting:</strong> After 30 days — submit receipt + NYSED clearance</li><li><strong>Mileage:</strong> Approved travel or PD only</li><li><strong>Tuition Reimbursement:</strong> Up to <strong>$3,000/fiscal year</strong> (extendable to $6,000 with prior approval). Pre-approve before enrolling, complete with min grade B, submit transcript + payment proof within 30 days via Ramp.</li></ul>No reimbursement for certification/licensure/testing fees. No pay advances or loans.`},
+  {keys:['referral bonus','employee referral','refer a teacher'],ans:`<strong>Employee Referral Bonus</strong><br><br>Refer a qualified hire and earn up to <strong>$750</strong>:<ul><li><strong>$250</strong> — first paycheck after new hire's first contracted day</li><li><strong>$500</strong> — following school year (new hire must sign contract + work 30+ days)</li></ul>Submit the Employee Referral Form <em>before</em> the offer letter. Eligible: certified teachers, counselors, social workers, hard-to-fill roles. Up to 3 referrals/year. Verbal referrals not accepted.`},
+  {keys:['dress code','attire','professional dress','what to wear','jeans'],ans:`<strong>Professional Attire Policy</strong><br><br>Business professional during all work hours.<br><br><strong>Not permitted:</strong><ul><li>Denim jeans (any color including black)</li><li>Sneakers, leggings, tank tops, midriffs, bare shoulders</li><li>Shorts or skirts more than 2 inches above the knee</li><li>Sweatshirts/t-shirts (unless school-issued)</li><li>Heels above 3 inches or flip flops</li></ul><strong>Exceptions:</strong> PE items, school pride days (jeans + school shirt), school-issued apparel`},
+  {keys:['work hours','teacher hours','what time','start time','end time','schedule'],ans:`<strong>Work Hours</strong><br><br><strong>BuffSci locations:</strong><ul><li>Teachers, counselors, social workers, nurses: <strong>7:40 am – 3:20 pm</strong></li><li>Principals, deans, admin, office: <strong>7:40 am – 3:40 pm</strong></li></ul><strong>RocSci locations:</strong><ul><li>Teachers and support staff: <strong>8:40 am – 4:20 pm</strong></li><li>Principals, deans, admin, office: <strong>8:40 am – 4:40 pm</strong></li></ul>15-minute grace period — PTO deducted in 1-hour increments after that. Call supervisor by <strong>6:00 am</strong> if absent.`},
+  {keys:['hybrid','remote work','work from home','wfh','eligible remote'],ans:`<strong>Hybrid & Remote Work Policy</strong><br><br>Fully remote work is <strong>not available</strong> for 2025–26. Limited hybrid arrangements available for eligible roles only.<br><br><strong>Eligible for hybrid:</strong> HR Team, Data Team; Chiefs/Directors/Academic Coaches (limited — once/week or twice/month)<br><br><strong>Not eligible:</strong> Principals, teachers, teaching support, guidance, social work, operations, maintenance<br><br>Hybrid requires at least <strong>3 days on campus/week</strong>. Requires exemplary performance record and Executive Director approval.`},
+  {keys:['certification','license','nysed','teaching certification','how apply certification'],ans:`<strong>Teaching Certification</strong><br><br>Uncertified teachers may work while pursuing certification (with Executive Director approval).<br><br>Find your certification requirements at:<br><strong>eservices.nysed.gov/teach/certhelp/search-cert-reqs</strong><br><br>Certification earns you the <strong>certified rate</strong> on the payscale — a meaningful salary increase at every step. Questions about certification and your contract: contact hrteam@buffsci.org.${esc()}`},
+  {keys:['bereavement','funeral','death in family'],ans:`<strong>Bereavement Leave</strong><br><br>Up to <strong>3 scheduled workdays</strong> for death of an immediate family member (or spouse's immediate family).<br><br>Immediate family includes: spouse/partner, children, parents, siblings, stepparents, stepchildren, parents-in-law, brother/sister-in-law, son/daughter-in-law, grandchildren, grandparents.`},
+  {keys:['cobra','leave job','resignation','resign','terminate','termination','offboard','last paycheck','what happens when i leave'],ans:`<strong>Leaving BuffSci/RocSci</strong><br><br><ul><li><strong>Notice:</strong> Minimum <strong>30 calendar days</strong> written notice</li><li><strong>PTO payout:</strong> Unused PTO is <strong>not paid out</strong> upon resignation or termination</li><li><strong>Final paycheck:</strong> On the pay date immediately following your last day, minus any equipment or fees owed</li><li><strong>Health insurance:</strong> COBRA rights may allow you to continue group coverage — contact HR</li><li><strong>403(b):</strong> Contact Equitable to roll over your account</li></ul>Return all keys, ID badges, and technology during offboarding.${esc()}`},
+  {keys:['total compensation','total package','what is the total','81000','81695','how much total'],ans:`<strong>Total Compensation & Investment</strong><br><br>For a first-year certified teacher with a master's degree, total compensation reaches <strong>$81,695</strong> including:<br><br><table><tr><th>Component</th><th>Value</th></tr><tr><td>Base salary</td><td>$52,000</td></tr><tr><td>Additional stipends</td><td>$3,000+</td></tr><tr><td>Health insurance (family, school-paid)</td><td>$16,689</td></tr><tr><td>Dental/Vision (family, school-paid)</td><td>$850</td></tr><tr><td>NYSTRS (school-paid)</td><td>$4,852</td></tr><tr><td>STD / LTD / Life (school-paid)</td><td>$928</td></tr><tr><td>PFL (school-paid)</td><td>$323</td></tr><tr><td>PTO payout (avg)</td><td>$450</td></tr><tr><td>PD Fund</td><td>$600</td></tr></table>`}
+];
+
+function findAns(q){
+  const lq=q.toLowerCase();
+  let best=null,bestScore=0;
+  for(const item of KB){
+    let score=item.keys.filter(k=>lq.includes(k)).length;
+    if(score>0&&score>bestScore){bestScore=score;best=item;}
+  }
+  if(!best){
+    for(const item of KB){
+      let score=item.keys.filter(k=>k.split(' ').some(w=>w.length>4&&lq.includes(w))).length;
+      if(score>0&&score>bestScore){bestScore=score;best=item;}
+    }
+  }
+  if(!best)return null;
+  return typeof best.ans==='function'?best.ans():best.ans;
+}
+
+function fallback(q){
+  return`I don't have a specific policy answer for that question in my current knowledge base.<br><br>For accurate and up-to-date information, please reach out to the HR team directly.${esc()}`
+}
+
+let typingEl=null;
+function showTyping(){
+  const area=document.getElementById('chatArea');
+  typingEl=document.createElement('div');
+  typingEl.className='msg';
+  typingEl.innerHTML=`<div class="avatar bot">HR</div><div class="bubble bot"><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  area.appendChild(typingEl);area.scrollTop=area.scrollHeight;
+}
+function removeTyping(){if(typingEl){typingEl.remove();typingEl=null;}}
+
+function addMsg(content,role){
+  const area=document.getElementById('chatArea');
+  const div=document.createElement('div');
+  div.className=`msg ${role}`;
+  const init=role==='bot'?'HR':'ME';
+  div.innerHTML=`<div class="avatar ${role}">${init}</div><div class="bubble ${role}">${content}</div>`;
+  area.appendChild(div);area.scrollTop=area.scrollHeight;
+}
+
+function askQ(q){
+  addMsg(q,'user');showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    const ans=findAns(q);
+    addMsg(ans||fallback(q),'bot');
+  },650);
+}
+
+function sendMsg(){
+  const inp=document.getElementById('userInput');
+  const q=inp.value.trim();if(!q)return;inp.value='';askQ(q);
+}
+
+function setCat(cat,btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const qBar=document.getElementById('quickBar');
+  const qs=QUICK[cat]||QUICK.all;
+  qBar.innerHTML=qs.map(q=>`<button class="quick-q" onclick="askQ(this.textContent)">${q}</button>`).join('');
+}
+
+function init(){
+  addMsg(`Welcome to your BuffSci & RocSci HR Assistant! I'm trained on your <strong>Employee Handbook, Benefits Guide, 2026–27 Payscale, and all leave policies</strong>.<br><br>Ask me about salary steps, PFL vs FMLA vs STD, benefits, onboarding, or any policy question. I'll escalate to <strong>hrteam@buffsci.org</strong> when needed.`,'bot');
+  setCat('all',document.querySelector('.cat-btn'));
+}
+init();
+</script>
+</body>
+</html>
